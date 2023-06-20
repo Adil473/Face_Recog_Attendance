@@ -28,6 +28,7 @@ for path in PathList:
     imgList.append(cv2.imread(os.path.join(folderPath, path)))
     StudentIds.append(os.path.splitext(path)[0])
 
+    #for database access
     fileName = f'{folderPath}/{path}'
     bucket = storage.bucket()
     blob = bucket.blob(fileName)
@@ -40,7 +41,7 @@ def findEncodings(imagesList):
     for img in imagesList:
         #converting bgr image color(used by opencv) to RGB image (used by face-recogntiion)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        encode = face_recognition.face_encodings(img)[0]
+        encode = face_recognition.face_encodings(img)[0] 
         encodeList.append(encode)
 
     return encodeList

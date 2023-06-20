@@ -69,15 +69,18 @@ while True:
     if faceCurFrame:
         for encodeFace, faceLoc in zip(encodeCurFrame,faceCurFrame):
             matches = face_recognition.compare_faces(encodeListKnown,encodeFace)
+            print("\nmatches",matches)
             faceDist = face_recognition.face_distance(encodeListKnown,encodeFace)
+            print("faceDist",faceDist)
             #print("matches",matches)
             #print("faceDistance", faceDist)
 
 
             matchIndex = np.argmin(faceDist)
             #print("Match Index", matchIndex)
+            print("Match Index ",matchIndex)
 
-            if matches[matchIndex]:
+            if matches[matchIndex] and faceDist[matchIndex]<0.50:
                 #print("Roll no: ",StudentIds[matchIndex])
                 y1, x2, y2, x1 = faceLoc
                 y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4
@@ -88,12 +91,13 @@ while True:
                 if counter == 0:
                     counter = 1
                     modeType = 1
-
+            # else:
+            #     print("Face not available in Database")
         if counter !=0 :
             if counter == 1:
                 # get the data
                 studentInfo = db.reference(f'Students/{id}').get()
-                print(studentInfo)
+                # print(studentInfo)
 
                 #get the image from the storage
                 blob = bucket.get_blob(f'images/{id}.jpg')
@@ -101,15 +105,15 @@ while True:
                 imgStudent = cv2.imdecode(array, cv2.COLOR_BGRA2BGR)
 
                 #update data of attendance
-                datetimeObject = datetime.strptime(studentInfo['last_attendance_tim'],
+                datetimeObject = datetime.strptime(studentInfo['last_attendance_time'],
                                                 "%Y-%m-%d %H:%M:%S")    
                 secondsElapsed = (datetime.now()-datetimeObject).total_seconds()
-                print(secondsElapsed)
-                if secondsElapsed > 30:
+                # print(secondsElapsed)
+                if secondsElapsed > 60:
                     ref = db.reference(f'Students/{id}')
                     studentInfo['total_attendance'] += 1
                     ref.child('total_attendance').set(studentInfo['total_attendance'])
-                    ref.child('last_attendance_tim').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                    ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 else:
                     modeType = 3
                     counter = 0
@@ -118,7 +122,7 @@ while True:
             
             if modeType != 3:
 
-                if 10<counter<20:
+                if 10<counter<60:
                     modeType = 2
                 imgBackground[44:44+633 , 808:808+414] = imgModeList[modeType]
 
@@ -127,11 +131,11 @@ while True:
                     (w,h),_ = cv2.getTextSize(studentInfo['name'],cv2.FONT_HERSHEY_COMPLEX,1,1)
                     offset = (414-w)//2
                     cv2.putText(imgBackground,str(studentInfo['name']),(808+offset,445), cv2.FONT_HERSHEY_COMPLEX,1,(100,100,100),1)
-                    cv2.putText(imgBackground,str(studentInfo['Course']),(1006,550), cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1)
+                    cv2.putText(imgBackground,str(studentInfo['Branch']),(1006,550), cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1)
                     cv2.putText(imgBackground,str(id),(1006,493), cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1)
-                    cv2.putText(imgBackground,str(studentInfo['standing']),(910,625), cv2.FONT_HERSHEY_COMPLEX,0.6,(100,100,100),1)
-                    cv2.putText(imgBackground,str(studentInfo['Passing Year']),(1025,625), cv2.FONT_HERSHEY_COMPLEX,0.6,(100,100,100),1)
-                    cv2.putText(imgBackground,str(studentInfo['last_attendance_tim']),(1125,625), cv2.FONT_HERSHEY_COMPLEX,0.6,(100,100,100),1)
+                    cv2.putText(imgBackground,str(studentInfo['Class']),(910,625), cv2.FONT_HERSHEY_COMPLEX,0.6,(100,100,100),1)
+                    cv2.putText(imgBackground,str(studentInfo['Year']),(1025,625), cv2.FONT_HERSHEY_COMPLEX,0.6,(100,100,100),1)
+                    cv2.putText(imgBackground,str(studentInfo['last_attendance_time']),(1125,625), cv2.FONT_HERSHEY_COMPLEX,0.6,(100,100,100),1)
 
 
                     imgBackground[175:175+216,909:909+216] = imgStudent
@@ -139,7 +143,7 @@ while True:
             
                 counter+=1
 
-                if counter>=20:
+                if counter>=60:
                     counter = 0
                     modeType = 0
                     studentInfo = []

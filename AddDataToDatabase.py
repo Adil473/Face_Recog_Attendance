@@ -12,13 +12,24 @@ firebase_admin.initialize_app(cred, {
 ref = db.reference('Students')
 
 data = {
-    "3":{
-    "name" : "Adil Shaikh",
-    "Course" : "B-Tech",
-    "Passing Year" : 2024,
-    "total_attendance" : 5,
-    "standing" : "VG",
-    "last_attendance_time" : "2023-6-"
+
+    "146":{
+    "name" : "Aarya Redekar",
+    "Branch" : "COMPS",
+    "Year" : "TE",
+    "total_attendance" : 2,
+    "Class" : "C3",
+    "last_attendance_time" : "2023-04-03 18:06:17"
+    },
+
+
+    "150":{
+    "name" : "Soham Sanghvi",
+    "Branch" : "COMPS",
+    "Year" : "TE",
+    "total_attendance" : 1,
+    "Class" : "C3",
+    "last_attendance_time" : "2023-04-03 18:06:17"
     }
 }
 
